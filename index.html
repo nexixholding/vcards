@@ -1,100 +1,175 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Business Card</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f0f0f0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
-    h1 {
-      margin: 20px;
-      font-size: 22px;
-    }
-    .image-container {
-      max-width: 95vw;
-      position: relative;
-    }
-    img {
-      width: 100%;
-      max-height: 80vh;
-      border-radius: 12px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      object-fit: contain;
-    }
-  </style>
-</head>
-<body>
-  <h1 id="userTitle">Business Card</h1>
-  <div class="image-container">
-    <img id="cardImage" src="" alt="Business Card"/>
-  </div>
-
-  <script>
-    const supportedExtensions = ['jpg', 'jpeg', 'png'];
-    const intervalTime = 3000; // 3 seconds per image
-    let images = [];
-    let currentIndex = 0;
-
-    function getQueryParam() {
-      const path = window.location.pathname;
-      const match = path.match(/\/([^\/]+)\/?$/);
-      return match ? match[1] : null;
-    }
-
-    async function checkImage(url) {
-      try {
-        const res = await fetch(url, { method: 'HEAD' });
-        return res.ok;
-      } catch {
-        return false;
-      }
-    }
-
-    async function loadImages(user) {
-      const types = ['front', 'back'];
-      for (let type of types) {
-        for (let ext of supportedExtensions) {
-          const path = `assets/${user}/${user}-${type}.${ext}`;
-          if (await checkImage(path)) {
-            images.push(path);
-            break; // Stop checking other extensions once found
-          }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saleh Business Card</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .card-container {
+            perspective: 1000px;
+            width: 100%;
+            max-width: 600px;
+            height: 350px;
+            margin: 0 auto;
         }
-      }
-
-      if (images.length === 0) {
-        document.getElementById('userTitle').innerText = "Card not found.";
-        return;
-      }
-
-      document.getElementById('userTitle').innerText = `${user}'s Business Card`;
-      showImage();
-      setInterval(showImage, intervalTime);
-    }
-
-    function showImage() {
-      const imgEl = document.getElementById('cardImage');
-      imgEl.src = images[currentIndex];
-      currentIndex = (currentIndex + 1) % images.length;
-    }
-
-    const user = getQueryParam();
-    if (user) {
-      loadImages(user.toLowerCase());
-    } else {
-      document.getElementById('userTitle').innerText = "No user specified.";
-    }
-  </script>
+        
+        .card {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.8s;
+            cursor: pointer;
+        }
+        
+        .card.flipped {
+            transform: rotateY(180deg);
+        }
+        
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .card-back {
+            transform: rotateY(180deg);
+        }
+        
+        .card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 100;
+        }
+        
+        .control-btn {
+            background: rgba(255, 255, 255, 0.8);
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+        }
+        
+        .control-btn:hover {
+            background: white;
+            transform: scale(1.1);
+        }
+        
+        .auto-rotate.active {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        @media (max-width: 640px) {
+            .card-container {
+                height: 220px;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center p-4">
+    <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-gray-800 mb-2">Saleh Business Card</h1>
+        <p class="text-gray-600">Click the card to flip or use the controls below</p>
+    </div>
+    
+    <div class="card-container">
+        <div class="card" id="businessCard">
+            <div class="card-face">
+                <img src="https://raw.githubusercontent.com/nexixholding/vcards/main/assets/Saleh/Saleh-front.jpg" alt="Business Card Front" class="w-full h-full">
+            </div>
+            <div class="card-face card-back">
+                <img src="https://raw.githubusercontent.com/nexixholding/vcards/main/assets/Saleh/Saleh-back.jpg" alt="Business Card Back" class="w-full h-full">
+            </div>
+        </div>
+    </div>
+    
+    <div class="controls">
+        <button class="control-btn flip-btn" title="Flip Card">
+            <i class="fas fa-sync-alt text-xl"></i>
+        </button>
+        <button class="control-btn auto-rotate" title="Auto Rotate">
+            <i class="fas fa-play text-xl"></i>
+        </button>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const card = document.getElementById('businessCard');
+            const flipBtn = document.querySelector('.flip-btn');
+            const autoRotateBtn = document.querySelector('.auto-rotate');
+            let autoRotateInterval = null;
+            let isAutoRotating = false;
+            
+            // Flip card on click
+            card.addEventListener('click', flipCard);
+            flipBtn.addEventListener('click', flipCard);
+            
+            // Auto rotate functionality
+            autoRotateBtn.addEventListener('click', toggleAutoRotate);
+            
+            function flipCard() {
+                card.classList.toggle('flipped');
+            }
+            
+            function toggleAutoRotate() {
+                if (isAutoRotating) {
+                    stopAutoRotate();
+                } else {
+                    startAutoRotate();
+                }
+            }
+            
+            function startAutoRotate() {
+                isAutoRotating = true;
+                autoRotateBtn.classList.add('active');
+                autoRotateBtn.innerHTML = '<i class="fas fa-stop text-xl"></i>';
+                autoRotateInterval = setInterval(flipCard, 2000); // Flip every 2 seconds
+            }
+            
+            function stopAutoRotate() {
+                isAutoRotating = false;
+                autoRotateBtn.classList.remove('active');
+                autoRotateBtn.innerHTML = '<i class="fas fa-play text-xl"></i>';
+                clearInterval(autoRotateInterval);
+            }
+            
+            // Make sure card is properly sized on load
+            function resizeCard() {
+                const container = document.querySelector('.card-container');
+                const width = container.offsetWidth;
+                const height = width * 0.5833; // Maintain business card aspect ratio (3.5" x 2")
+                container.style.height = `${height}px`;
+            }
+            
+            // Initial resize
+            resizeCard();
+            
+            // Resize on window change
+            window.addEventListener('resize', resizeCard);
+        });
+    </script>
 </body>
 </html>
