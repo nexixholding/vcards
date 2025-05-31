@@ -1,0 +1,100 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Business Card</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f0f0f0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    h1 {
+      margin: 20px;
+      font-size: 22px;
+    }
+    .image-container {
+      max-width: 95vw;
+      position: relative;
+    }
+    img {
+      width: 100%;
+      max-height: 80vh;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      object-fit: contain;
+    }
+  </style>
+</head>
+<body>
+  <h1 id="userTitle">Business Card</h1>
+  <div class="image-container">
+    <img id="cardImage" src="" alt="Business Card"/>
+  </div>
+
+  <script>
+    const supportedExtensions = ['jpg', 'jpeg', 'png'];
+    const intervalTime = 3000; // 3 seconds per image
+    let images = [];
+    let currentIndex = 0;
+
+    function getQueryParam() {
+      const path = window.location.pathname;
+      const match = path.match(/\/([^\/]+)\/?$/);
+      return match ? match[1] : null;
+    }
+
+    async function checkImage(url) {
+      try {
+        const res = await fetch(url, { method: 'HEAD' });
+        return res.ok;
+      } catch {
+        return false;
+      }
+    }
+
+    async function loadImages(user) {
+      const types = ['front', 'back'];
+      for (let type of types) {
+        for (let ext of supportedExtensions) {
+          const path = `assets/${user}/${user}-${type}.${ext}`;
+          if (await checkImage(path)) {
+            images.push(path);
+            break; // Stop checking other extensions once found
+          }
+        }
+      }
+
+      if (images.length === 0) {
+        document.getElementById('userTitle').innerText = "Card not found.";
+        return;
+      }
+
+      document.getElementById('userTitle').innerText = `${user}'s Business Card`;
+      showImage();
+      setInterval(showImage, intervalTime);
+    }
+
+    function showImage() {
+      const imgEl = document.getElementById('cardImage');
+      imgEl.src = images[currentIndex];
+      currentIndex = (currentIndex + 1) % images.length;
+    }
+
+    const user = getQueryParam();
+    if (user) {
+      loadImages(user.toLowerCase());
+    } else {
+      document.getElementById('userTitle').innerText = "No user specified.";
+    }
+  </script>
+</body>
+</html>
